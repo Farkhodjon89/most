@@ -1,0 +1,11 @@
+{
+  "printWidth": 120,
+  "semi": true,
+  "quoteProps": "consistent",
+  "newline-before-return": true,
+  "extends": ["next", "prettier"],
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "endOfLine": "lf"
+}

@@ -1,0 +1,91 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended",
+    "plugin:import/recommended"
+  ],
+  "settings": {
+    "next": {
+      "rootDir": "/src"
+    }
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "prettier",
+    "import",
+    "@typescript-eslint",
+    "simple-import-sort",
+    "unused-imports"
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "printWidth": 120,
+        "semi": true,
+        "quoteProps": "consistent",
+        "newline-before-return": true,
+        "extends": ["next", "prettier"],
+        "singleQuote": true,
+        "tabWidth": 2,
+        "trailingComma": "all",
+        "endOfLine": "auto"
+      }
+    ],
+    // NextJs specific fix: suppress errors for missing 'import React' in files for nextjs
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    // NextJs specific fix: allow jsx syntax in js files
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }], //should add ".ts" if typescript project
+    "react/display-name": 1,
+
+//    "no-console": "error", позже вернуть
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "off",
+
+    "import/named": "off",
+
+    "react/jsx-props-no-spreading": "off",
+    "import/export": "off",
+    "consistent-return": "off",
+    "react/jsx-no-bind": "off",
+
+    "no-else-return": "warn",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "import/no-extraneous-dependencies": "off",
+    "react/default-props-match-prop-types": ["error", { "allowRequiredDefaults": true }],
+    "no-unused-expressions": "warn",
+    "no-unused-labels": "warn",
+    "@typescript-eslint/ban-ts-comment": "off",
+//    "@typescript-eslint/no-explicit-any": "off", позже вернуть
+//    "no-unused-vars": "off", позже вернуть
+//    "@typescript-eslint/no-unused-vars": ["error"], позже вернуть
+    "no-nested-ternary": "warn",
+
+    // https://github.com/facebook/create-react-app/discussions/11864
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
+
+    // increase the severity of rules so they are auto-fixable
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "import/newline-after-import": "error",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+    ]
+  }
+}

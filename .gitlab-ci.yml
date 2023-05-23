@@ -1,0 +1,103 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DEV_BRANCH: "dev"
+  STAGE_BRANCH: "stage"
+  PROD_BRANCH: "main"
+  DOCKER_TLS_CERTDIR: "/certs"
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEV_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $STAGE_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $PROD_BRANCH'
+
+stages:
+  - build
+  - push
+  - deploy
+
+
+
+build_dev:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEV_BRANCH'
+  script:
+    - docker build --build-arg BUILD_ENV=dev -t $IMAGE_TAG .
+
+build_stage:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $STAGE_BRANCH'
+  script:
+    - docker build --build-arg BUILD_ENV=stage -t $IMAGE_TAG .
+
+build_prod:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $PROD_BRANCH'
+  script:
+    - docker build --build-arg BUILD_ENV=prod -t $IMAGE_TAG .
+
+
+
+push:
+  stage: push
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $IMAGE_TAG
+
+
+
+deploy_dev:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $DEV_BRANCH'
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$MOST_DEVELOPMENT_KEY" | base64 -d | tr -d '\r')
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - touch ~/.ssh/known_hosts
+    - ssh-keyscan $MOST_DEVELOPMENT_URL >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh ubuntu@$MOST_DEVELOPMENT_URL "cd most-docker && make deploy-frontend"
+
+deploy_stage:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $STAGE_BRANCH'
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$MOST_STAGE_KEY" | base64 -d | tr -d '\r')
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - touch ~/.ssh/known_hosts
+    - ssh-keyscan $MOST_STAGE_URL >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh ubuntu@$MOST_STAGE_URL "cd most-docker && make deploy-frontend"
+
+deploy_prod:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $PROD_BRANCH'
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$MOST_PRODUCTION_KEY" | base64 -d | tr -d '\r')
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - touch ~/.ssh/known_hosts
+    - ssh-keyscan $MOST_PRODUCTION_URL >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh ubuntu@$MOST_PRODUCTION_URL "cd most-docker && make deploy-frontend"
